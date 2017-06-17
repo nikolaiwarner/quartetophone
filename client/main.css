@@ -56,3 +56,26 @@ a {
 .playerContainer a {
   color: #000;
 }
+
+.measureContainer {
+  margin: 20px;
+  border: 1px solid #000;
+  color: #000;
+  display: flex;
+  flex-direction: row;
+  height: 100px;
+  opacity: 0.5;
+  transition: opacity 1s;
+}
+
+.measureContainer.current {
+  opacity: 1;
+}
+
+.measureCount {
+  background-color: #000;
+  color: #fff;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
