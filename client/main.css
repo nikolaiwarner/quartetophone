@@ -1,0 +1,58 @@
+html, body {
+  font-family: sans-serif;
+  background-color: #000;
+  color: #fff;
+  padding: 0;
+  margin: 0;
+  font-size: 20px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+a {
+  color: #fff;
+  padding: 10;
+}
+
+#render-target, div[data-reactroot] {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  align-content: stretch;
+}
+
+.manipulatorContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  align-content: stretch;
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid #fff;
+}
+
+.playerContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  align-content: stretch;
+  background-color: #fff;
+  color: #000;
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid #000;
+}
+
+.playerContainer a {
+  color: #000;
+}
