@@ -58,12 +58,14 @@ a {
 }
 
 .measureContainer {
+  position: relative;
   margin: 20px;
+  background-color: #fff;
   border: 1px solid #000;
   color: #000;
   display: flex;
   flex-direction: row;
-  height: 100px;
+  height: 150px;
   opacity: 0.5;
   transition: opacity 1s;
 }
@@ -72,10 +74,19 @@ a {
   opacity: 1;
 }
 
+.measureContainer svg text {
+  display: none;
+}
+
 .measureCount {
   background-color: #000;
   color: #fff;
   align-items: center;
   justify-content: center;
   padding: 20px;
+}
+
+.measureContent {
+  display: flex;
+  flex-grow: 1
 }

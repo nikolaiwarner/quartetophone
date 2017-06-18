@@ -3,8 +3,6 @@ import ReactDOM from 'react-dom'
 import { Meteor } from 'meteor/meteor'
 import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom'
 
-import randomEmoji from 'random-emoji'
-
 export default class Manipulator extends Component {
   constructor (props, context) {
     super(props)
@@ -38,7 +36,6 @@ export default class Manipulator extends Component {
   }
 
   expireManipulator () {
-    alert('expireManipulator')
     Meteor.call('manipulators.expire', this.props.manipulator._id, (error, result) => {
       if (error) { console.warn('error', result) }
       console.log('result', result)
@@ -48,8 +45,22 @@ export default class Manipulator extends Component {
   updatePattern (event, one, two) {
     event.preventDefault()
 
-    let emoji = randomEmoji.random({count: 1})
-    this.setState({patternData: {pattern: this.state.patternData.pattern + emoji[0].character}}, () => {
+    console.log({ x: event.screenX, y: event.screenY })
+
+    let durations = [1, 2, 4, 8, 16, 32]
+
+    let duration = durations[Math.floor(Math.random() * durations.length)]
+
+
+    let {height, width} = window.getComputedStyle(document.getElementsByClassName('manipulatorContainer')[0])
+    height = parseInt(height)
+    // console.log(event.screenY, height, event.screenY / height, Math.floor((event.screenY / height) * 16))
+
+    let pitch = Math.floor((1 - (event.screenY / height)) * 16) - 2
+
+    let newNote = ` :${duration} ${pitch}/4 `
+
+    this.setState({patternData: {pattern: this.state.patternData.pattern + newNote}}, () => {
       console.log(this.state.patternData)
       Meteor.call('manipulators.updatePattern', this.props.manipulator._id, this.state.patternData, (error, result) => {
         if (error) { console.warn('error', result) }
@@ -83,6 +94,14 @@ export default class Manipulator extends Component {
           <div>
             expiredAt: {this.props.manipulator.expiredAt.toString()}
           </div>
+        }
+        {!!this.props.manipulator.expiredAt &&
+          <div>
+            expiredAt: {this.props.manipulator.expiredAt.toString()}
+          </div>
+        }
+        {!!this.props.manipulator.patternData &&
+          <span>{this.props.manipulator.patternData.pattern.toString()}</span>
         }
       </div>
     )
