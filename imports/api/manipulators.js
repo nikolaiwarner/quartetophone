@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { check } from 'meteor/check'
-import moment from 'Moment'
+import moment from 'moment'
 
 export const Manipulators = new Mongo.Collection('manipulators')
 
