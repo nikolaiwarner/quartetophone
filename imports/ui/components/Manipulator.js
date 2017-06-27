@@ -52,7 +52,7 @@ export default class Manipulator extends Component {
   }
 
   updatePattern (proxy, event) {
-    event.preventDefault()
+    proxy.preventDefault()
 
     console.log({ x: proxy.screenX, y: proxy.screenY }, {event, proxy})
 
