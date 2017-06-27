@@ -5,6 +5,7 @@ import { Meteor } from 'meteor/meteor'
 let VexTab = window.VexTab
 let Artist = window.Artist
 let Renderer = window.Vex.Flow.Renderer
+// let MidiPlayer = window.Vex.Flow.Player
 
 export default class Player extends Component {
   constructor (props) {
@@ -63,6 +64,8 @@ export default class Player extends Component {
       let renderer = new Renderer(document.getElementById(componentId), Renderer.Backends.SVG)
       let artist = new Artist(5, 10, parseInt(width), {scale: 1})
       let vextab = new VexTab(artist)
+      // let midiPlayer = new window.Vex.Flow.Player(artist, {tempo: this.state.bpm})
+
       try {
         let tabString = `options tab-stems=true tab-stem-direction=up \n ` +
                         `tabstave notation=true tablature=false key=${this.state.key} clef=${this.state.clef} \n ` +
@@ -80,6 +83,7 @@ export default class Player extends Component {
         }
         vextab.parse(tabString)
         artist.render(renderer)
+        // midiPlayer.play()
       } catch (e) {
         console.log(e)
       }

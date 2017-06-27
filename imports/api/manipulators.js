@@ -16,7 +16,7 @@ if (Meteor.isServer) {
   const expireManipulators = () => {
     let activeManipulators = Manipulators.find({
       'expiredAt': {'$exists': false},
-      'updatedAt': {'$lt': moment().subtract(30, 'seconds').toDate()}
+      'updatedAt': {'$lt': moment().subtract(60, 'seconds').toDate()}
     }).fetch()
     console.log('activeManipulators to remove', activeManipulators.length)
     activeManipulators.forEach((manipulator) => {

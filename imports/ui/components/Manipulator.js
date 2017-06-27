@@ -3,11 +3,20 @@ import ReactDOM from 'react-dom'
 import { Meteor } from 'meteor/meteor'
 import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom'
 
+let VexTab = window.VexTab
+let Artist = window.Artist
+let Renderer = window.Vex.Flow.Renderer
+
 export default class Manipulator extends Component {
   constructor (props, context) {
     super(props)
     this.state = {
-      patternData: {pattern: ''}
+      patternData: {pattern: ''},
+      key: props.key || 'C',
+      clef: props.clef || 'treble', // treble, alto, tenor, bass, percussion
+      bpm: props.bpm || 85,
+      beatsPerMeasure: 4,
+      currentMeasureId: 1
     }
   }
 
@@ -42,21 +51,20 @@ export default class Manipulator extends Component {
     })
   }
 
-  updatePattern (event, one, two) {
+  updatePattern (proxy, event) {
     event.preventDefault()
 
-    console.log({ x: event.screenX, y: event.screenY })
+    console.log({ x: proxy.screenX, y: proxy.screenY }, {event, proxy})
 
     let durations = [1, 2, 4, 8, 16, 32]
 
     let duration = durations[Math.floor(Math.random() * durations.length)]
 
-
     let {height, width} = window.getComputedStyle(document.getElementsByClassName('manipulatorContainer')[0])
     height = parseInt(height)
     // console.log(event.screenY, height, event.screenY / height, Math.floor((event.screenY / height) * 16))
 
-    let pitch = Math.floor((1 - (event.screenY / height)) * 16) - 2
+    let pitch = Math.floor((1 - (proxy.screenY / height)) * 16) - 2
 
     let newNote = ` :${duration} ${pitch}/4 `
 
@@ -69,40 +77,49 @@ export default class Manipulator extends Component {
     })
   }
 
+  renderEditor () {
+    let componentId = 'editor'
+    setTimeout(() => {
+      let element = document.getElementById(componentId)
+      element.innerHTML = ''
+      let width = window.getComputedStyle(element).width
+      let renderer = new Renderer(document.getElementById(componentId), Renderer.Backends.SVG)
+      let artist = new Artist(5, 10, parseInt(width), {scale: 1})
+      let vextab = new VexTab(artist)
+      try {
+        let tabString = `options tab-stems=true tab-stem-direction=up \n ` +
+                        `tabstave notation=true tablature=false key=${this.state.key} clef=${this.state.clef} \n ` +
+                        `notes `
+        tabString = tabString + '=|: '
+        if (this.props.manipulator.patternData) {
+          tabString = tabString + this.props.manipulator.patternData.pattern
+        } else {
+          tabString = tabString + ' ## '
+        }
+        tabString = tabString + ' =:|'
+        vextab.parse(tabString)
+        artist.render(renderer)
+      } catch (e) {
+        console.log(e)
+      }
+    }, 1)
+    return (
+      <div className={'editorContainer'}>
+        <div className={'editor'} id={componentId}>
+        </div>
+      </div>
+    )
+  }
+
   render () {
     if (this.props.loading || !this.props.manipulator._id) {
-      return <div>loading</div>
+      return <div className='center'>...</div>
     }
     return (
       <div className='manipulatorContainer' onClick={this.updatePattern.bind(this)}>
-        manipulatorId: {this.props.manipulator._id}
-        <br />
-        playerId: {this.props.manipulator.playerId}
-        <br />
-        measureId: {this.props.manipulator.measureId}
-        {!!this.props.manipulator.createdAt &&
-          <div>
-            createdAt: {this.props.manipulator.createdAt.toString()}
-          </div>
-        }
-        {!!this.props.manipulator.updatedAt &&
-          <div>
-            updatedAt: {this.props.manipulator.updatedAt.toString()}
-          </div>
-        }
-        {!!this.props.manipulator.expiredAt &&
-          <div>
-            expiredAt: {this.props.manipulator.expiredAt.toString()}
-          </div>
-        }
-        {!!this.props.manipulator.expiredAt &&
-          <div>
-            expiredAt: {this.props.manipulator.expiredAt.toString()}
-          </div>
-        }
-        {!!this.props.manipulator.patternData &&
-          <span>{this.props.manipulator.patternData.pattern.toString()}</span>
-        }
+        {this.renderEditor()}
+        Player {this.props.manipulator.playerId} .
+        Measure {this.props.manipulator.measureId}
       </div>
     )
   }
