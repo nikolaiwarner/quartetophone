@@ -75,16 +75,7 @@ a {
   padding: 20px;
 }
 
-.editorContainer {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: stretch;
-  align-content: stretch;
-  background-color: #fff;
-  margin-bottom: 10px;
-}
+
 
 .playerContainer {
   height: 100%;
@@ -135,5 +126,78 @@ a {
 
 .measureContent {
   display: flex;
-  flex-grow: 1
+  flex-grow: 1;
+  position: relative;
+}
+
+.measureContentProgress {
+  position: absolute;
+  left: 0;
+  height: 100%;
+  border-right: solid 2px red;
+}
+
+.measureContainer {
+  position: relative;
+  margin: 20px;
+  background-color: #fff;
+  border: 1px solid #000;
+  opacity: 0.5;
+  transition: opacity 1s;
+
+  user-select: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+.editorContainer {
+  user-select: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+.editorColumn {
+  margin: 0;
+  background-color: #fff;
+  border-right: 1px dashed rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.editorNoteButton {
+  flex-grow: 1;
+  text-align: center;
+  position: relative;
+  margin-top: -20px;
+}
+
+.editorNoteButton:nth-child(odd) {
+  flex-grow: 1;
+  text-align: center;
+  position: relative;
+}
+
+.editorNoteButton:nth-child(odd):after {
+  position: absolute;
+  bottom: 0%;
+  left: 0;
+  width: 100%;
+  border-bottom: solid 1px black;
+  content: '';
+}
+
+.editorNoteButtonImage {
+  max-height: 30px;
+  max-width: 30px;
+  width: 100%;
+  transform: scale(3);
+  pointer-events: none;
+  position: absolute;
+  margin-top: -45%;
+  margin-left: -25%;
 }

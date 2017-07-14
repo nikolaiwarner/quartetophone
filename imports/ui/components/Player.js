@@ -2,11 +2,6 @@ import React, { Component, PropTypes } from 'react'
 import ReactDOM from 'react-dom'
 import { Meteor } from 'meteor/meteor'
 
-let VexTab = window.VexTab
-let Artist = window.Artist
-let Renderer = window.Vex.Flow.Renderer
-// let MidiPlayer = window.Vex.Flow.Player
-
 export default class Player extends Component {
   constructor (props) {
     super(props)
@@ -29,19 +24,6 @@ export default class Player extends Component {
     }, this.millisecondsPerMeasure())
   }
 
-  componentDidUpdate () {
-    // this.osmd
-    //   .load('http://downloads2.makemusic.com/musicxml/MozaVeilSample.xml')
-    //   .then(
-    //     () => this.osmd.render(),
-    //     (err) => console.err(err)
-    //   )
-    //   .then(
-    //     () => console.log('Sheet music displayed.'),
-    //     (err) => console.err(err)
-    //   )
-  }
-
   bpmToMilliseconds (bpm) {
     return (60 * 1000) / bpm
   }
@@ -50,49 +32,40 @@ export default class Player extends Component {
     return this.bpmToMilliseconds(this.state.bpm) * this.state.beatsPerMeasure
   }
 
+  durationOfNote ({patternData, x, y}) {
+    let duration = 0
+    if (patternData && patternData[x] && patternData[x][y]) {
+      duration = patternData[x][y]
+    }
+    return duration
+  }
+
+  renderEditorNoteButtonImage ({patternData, x, y}) {
+    return <img src={`/images/${this.durationOfNote({patternData, x, y})}.png`} className={'editorNoteButtonImage'} />
+  }
+
   renderMeasure (measureId, index) {
     let manipulator = this.props.manipulators.find((manipulator) => {
       return manipulator.measureId === measureId
     }) || {}
-
+    //
     let containerId = `measureContainer${index}`
     let componentId = `measure${index}${manipulator._id}`
-    setTimeout(() => {
-      let element = document.getElementById(componentId)
-      element.innerHTML = ''
-      let width = window.getComputedStyle(element).width
-      let renderer = new Renderer(document.getElementById(componentId), Renderer.Backends.SVG)
-      let artist = new Artist(5, 10, parseInt(width), {scale: 1})
-      let vextab = new VexTab(artist)
-      // let midiPlayer = new window.Vex.Flow.Player(artist, {tempo: this.state.bpm})
-
-      try {
-        let tabString = `options tab-stems=true tab-stem-direction=up \n ` +
-                        `tabstave notation=true tablature=false key=${this.state.key} clef=${this.state.clef} \n ` +
-                        `notes `
-        if (measureId === 0) {
-          tabString = tabString + '=|: '
-        }
-        if (manipulator.patternData) {
-          tabString = tabString + manipulator.patternData.pattern
-        } else {
-          tabString = tabString + ' ## '
-        }
-        if (measureId === 3) {
-          tabString = tabString + ' =:|'
-        }
-        vextab.parse(tabString)
-        artist.render(renderer)
-        // midiPlayer.play()
-      } catch (e) {
-        console.log(e)
-      }
-    }, 1)
+    let componentProgressId = `measure${index}${manipulator._id}_progress`
 
     let style = {}
     if (index === 0) {
       style.zIndex = 1
       style.opacity = 1
+
+      setTimeout(() => {
+        document.getElementById(componentProgressId).style.transition = 'all 0ms linear'
+        document.getElementById(componentProgressId).style.width = '0%'
+      }, 1)
+      setTimeout(() => {
+        document.getElementById(componentProgressId).style.transition = `all ${this.millisecondsPerMeasure() - 100}ms linear`
+        document.getElementById(componentProgressId).style.width = '100%'
+      }, 100)
     } else {
       style.zIndex = 0
       style.opacity = (4 - (index * 1.2)) / 4
@@ -112,12 +85,27 @@ export default class Player extends Component {
       }, 100)
     }
 
+    let patternData = manipulator.patternData
     return (
       <div key={index} id={containerId} className={'measureContainer'} style={style}>
         <div className={'measureCount'}>
           {measureId + 1}
         </div>
-        <div className={'measureContent'} id={componentId}>
+        <div className={'editorContainer measureContent'} id={componentId}>
+          {[...Array(16)].map((key, x) => {
+            return (
+              <div key={x} className={'editorColumn'}>
+                {[...Array(16)].map((key, y) => {
+                  return (
+                    <div key={y} className={'editorNoteButton'} >
+                      {this.renderEditorNoteButtonImage({patternData, x, y})}
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
+          <div className={'measureContentProgress'} id={componentProgressId} />
         </div>
       </div>
     )

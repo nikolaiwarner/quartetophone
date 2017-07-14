@@ -3,15 +3,11 @@ import ReactDOM from 'react-dom'
 import { Meteor } from 'meteor/meteor'
 import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom'
 
-let VexTab = window.VexTab
-let Artist = window.Artist
-let Renderer = window.Vex.Flow.Renderer
-
 export default class Manipulator extends Component {
   constructor (props, context) {
     super(props)
     this.state = {
-      patternData: {pattern: ''},
+      patternData: {},
       key: props.key || 'C',
       clef: props.clef || 'treble', // treble, alto, tenor, bass, percussion
       bpm: props.bpm || 85,
@@ -51,25 +47,29 @@ export default class Manipulator extends Component {
     })
   }
 
-  updatePattern (proxy, event) {
-    proxy.preventDefault()
+  durationOfNote ({x, y}) {
+    let duration = 0
+    if (this.state.patternData && this.state.patternData[x] && this.state.patternData[x][y]) {
+      duration = this.state.patternData[x][y]
+    }
+    return duration
+  }
 
-    console.log({ x: proxy.screenX, y: proxy.screenY }, {event, proxy})
+  onClickEditorNoteButton ({x, y}) {
+    let durations = [0, 1, 2, 4, 8, 16]
+    let durationIndex = durations.indexOf(this.durationOfNote({x, y}))
+    durationIndex = durationIndex + 1
+    if (durationIndex > durations.length - 1) {
+      durationIndex = 0
+    }
+    let z = durations[durationIndex]
+    let patternData = this.state.patternData || {}
+    if (!patternData[x]) {
+      patternData[x] = {}
+    }
+    patternData[x][y] = z
 
-    let durations = [1, 2, 4, 8, 16, 32]
-
-    let duration = durations[Math.floor(Math.random() * durations.length)]
-
-    let {height, width} = window.getComputedStyle(document.getElementsByClassName('manipulatorContainer')[0])
-    height = parseInt(height)
-    // console.log(event.screenY, height, event.screenY / height, Math.floor((event.screenY / height) * 16))
-
-    let pitch = Math.floor((1 - (proxy.screenY / height)) * 16) - 2
-
-    let newNote = ` :${duration} ${pitch}/4 `
-
-    this.setState({patternData: {pattern: this.state.patternData.pattern + newNote}}, () => {
-      console.log(this.state.patternData)
+    this.setState({patternData}, () => {
       Meteor.call('manipulators.updatePattern', this.props.manipulator._id, this.state.patternData, (error, result) => {
         if (error) { console.warn('error', result) }
         console.log('result', result)
@@ -77,36 +77,29 @@ export default class Manipulator extends Component {
     })
   }
 
+  renderEditorNoteButtonImage ({x, y}) {
+    return <img src={`/images/${this.durationOfNote({x, y})}.png`} className={'editorNoteButtonImage'} />
+  }
+
   renderEditor () {
-    let componentId = 'editor'
-    setTimeout(() => {
-      let element = document.getElementById(componentId)
-      element.innerHTML = ''
-      let width = window.getComputedStyle(element).width
-      let renderer = new Renderer(document.getElementById(componentId), Renderer.Backends.SVG)
-      let artist = new Artist(5, 10, parseInt(width), {scale: 1})
-      let vextab = new VexTab(artist)
-      try {
-        let tabString = `options tab-stems=true tab-stem-direction=up \n ` +
-                        `tabstave notation=true tablature=false key=${this.state.key} clef=${this.state.clef} \n ` +
-                        `notes `
-        tabString = tabString + '=|: '
-        if (this.props.manipulator.patternData) {
-          tabString = tabString + this.props.manipulator.patternData.pattern
-        } else {
-          tabString = tabString + ' ## '
-        }
-        tabString = tabString + ' =:|'
-        vextab.parse(tabString)
-        artist.render(renderer)
-      } catch (e) {
-        console.log(e)
-      }
-    }, 1)
+    // x: 16 columns
+    // y: 16 notes
+    // z: 7 note durations;  multiple taps toggle the length of note
     return (
       <div className={'editorContainer'}>
-        <div className={'editor'} id={componentId}>
-        </div>
+        {[...Array(16)].map((key, x) => {
+          return (
+            <div key={x} className={'editorColumn'}>
+              {[...Array(16)].map((key, y) => {
+                return (
+                  <div key={y} className={'editorNoteButton'} onClick={this.onClickEditorNoteButton.bind(this, {x, y})} >
+                    {this.renderEditorNoteButtonImage({x, y})}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
       </div>
     )
   }
@@ -116,7 +109,7 @@ export default class Manipulator extends Component {
       return <div className='center'>...</div>
     }
     return (
-      <div className='manipulatorContainer' onClick={this.updatePattern.bind(this)}>
+      <div className='manipulatorContainer'>
         {this.renderEditor()}
         Player {this.props.manipulator.playerId} .
         Measure {this.props.manipulator.measureId}
