@@ -31,43 +31,29 @@ if (Meteor.isServer) {
 Meteor.methods({
   'manipulators.insert' () {
     let activeManipulators = Manipulators.find({'expiredAt': {'$exists': false}}).fetch()
-
-    console.log({activeManipulators})
-
-    // const findOpenPlayerAndMeasure = () => {
-      const getRandomIntInclusive = (min, max) => {
-        min = Math.ceil(min)
-        max = Math.floor(max)
-        return Math.floor(Math.random() * (max - min + 1)) + min
-      }
-
-      let randomPlayerId = getRandomIntInclusive(1, 4)
-      let randomMeasureId = getRandomIntInclusive(1, 4)
-      let open = !activeManipulators.some((manipulator) => {
-        return manipulator.playerId === randomPlayerId &&
-               manipulator.measureId === randomMeasureId
-      })
-      console.log('trying', {randomPlayerId, randomMeasureId}, activeManipulators, open)
-
-    //   // return
-    //   if (open) {
-    //     return Manipulators.insert({
-    //       playerId: randomPlayerId,
-    //       measureId: randomMeasureId,
-    //       createdAt: new Date()
-    //     })
-    //   } else {
-    //     // return findOpenPlayerAndMeasure()
-    //   }
-    // }
-    // return findOpenPlayerAndMeasure()
-
-    return Manipulators.insert({
-      playerId: randomPlayerId,
-      measureId: randomMeasureId,
-      createdAt: new Date(),
-      updatedAt: new Date()
+    let activePairs = activeManipulators.map((manipulator) => {
+      return `${manipulator.playerId}:${manipulator.measureId}`
     })
+    let availablePairs = [
+      '1:1', '1:2', '1:3', '1:4',
+      '2:1', '2:2', '2:3', '2:4',
+      '3:1', '3:2', '3:3', '3:4',
+      '4:1', '4:2', '4:3', '4:4'
+    ]
+    let remainingPairs = availablePairs.filter((pair) => !activePairs.includes(pair))
+    console.log({remainingPairs: remainingPairs.length})
+    if (remainingPairs.length > 0) {
+      let pair = remainingPairs[Math.floor(Math.random() * remainingPairs.length)]
+      let ids = pair.split(':')
+      return Manipulators.insert({
+        playerId: parseInt(ids[0]),
+        measureId: parseInt(ids[1]),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+    } else {
+      return false
+    }
   },
   'manipulators.remove' (manipulatorId) {
     check(manipulatorId, String)

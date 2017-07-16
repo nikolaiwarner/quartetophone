@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react'
 import ReactDOM from 'react-dom'
 import { Meteor } from 'meteor/meteor'
+import Tone from 'tone'
 
 export default class Player extends Component {
   constructor (props) {
@@ -10,18 +11,42 @@ export default class Player extends Component {
       clef: props.clef || 'treble', // treble, alto, tenor, bass, percussion
       bpm: props.bpm || 85,
       beatsPerMeasure: 4,
-      currentMeasureId: 1
+      currentMeasureId: 1,
+      playerId: props.match.params._id,
+      playAudio: false
     }
+
+    let bitcrusher = new Tone.BitCrusher(4).toMaster()
+    let vibrato = new Tone.Vibrato().toMaster()
+    let freeverb = new Tone.Freeverb().toMaster()
+    this.synth = new Tone.PolySynth(2, Tone.Synth).connect(bitcrusher).connect(vibrato).connect(freeverb)
+    this.synth.set('detune', -1200 * this.state.playerId)
+
+    this.onClickPlayAudio = this.onClickPlayAudio.bind(this)
   }
 
   componentDidMount () {
-    setInterval(() => {
-      let currentMeasureId = this.state.currentMeasureId + 1
-      if (currentMeasureId === 5) {
-        currentMeasureId = 1
-      }
-      this.setState({currentMeasureId})
-    }, this.millisecondsPerMeasure())
+    // To syncronize clients, calculate measures elapsed since the beginning of time
+    let measuresElapsed = Date.now() / this.millisecondsPerMeasure()
+    let currentMeasure = (measuresElapsed % 4)
+    let percentUntilNextMeasure = (currentMeasure + '').split('.')
+    let startDelay = 0
+    if (percentUntilNextMeasure[1]) {
+      percentUntilNextMeasure = 1 - parseFloat('0.' + percentUntilNextMeasure[1])
+      startDelay = percentUntilNextMeasure * this.millisecondsPerMeasure()
+    }
+    this.setState({currentMeasureId: Math.floor(currentMeasure) + 1}, () => {
+      // Delay start until next whole measure
+      setTimeout(() => {
+        setInterval(() => {
+          let currentMeasureId = this.state.currentMeasureId + 1
+          if (currentMeasureId === 5) {
+            currentMeasureId = 1
+          }
+          this.setState({currentMeasureId})
+        }, this.millisecondsPerMeasure())
+      }, startDelay)
+    })
   }
 
   bpmToMilliseconds (bpm) {
@@ -40,8 +65,29 @@ export default class Player extends Component {
     return duration
   }
 
-  renderEditorNoteButtonImage ({patternData, x, y}) {
-    return <img src={`/images/${this.durationOfNote({patternData, x, y})}.png`} className={'editorNoteButtonImage'} />
+  onClickPlayAudio () {
+    this.setState({playAudio: !this.state.playAudio})
+  }
+
+  renderEditorNoteButtonImage ({patternData, x, y, index}) {
+    let duration = this.durationOfNote({patternData, x, y})
+
+    //this.state.playAudio
+
+    if (this.state.playAudio) {
+      if (index === 0 && duration !== 0) {
+        let note = [
+          'c6', 'd6', 'e6', 'f6', 'g6', 'a6', 'b6',
+          'c5', 'd5', 'e5', 'f5', 'g5', 'a5', 'b5',
+          'c4', 'd4'].reverse()[y]
+        let delay = this.millisecondsPerMeasure() * (x / 16)
+        setTimeout(() => {
+          this.synth.triggerAttackRelease(note, `${duration}n`)
+        }, delay)
+      }
+    }
+
+    return <img src={`/images/${duration}.png`} className={'editorNoteButtonImage'} />
   }
 
   renderMeasure (measureId, index) {
@@ -55,8 +101,9 @@ export default class Player extends Component {
 
     let style = {}
     if (index === 0) {
-      style.zIndex = 1
-      style.opacity = 1
+      style.display = 'flex'
+      // style.zIndex = 1
+      // style.opacity = 1
 
       setTimeout(() => {
         document.getElementById(componentProgressId).style.transition = 'all 0ms linear'
@@ -67,63 +114,65 @@ export default class Player extends Component {
         document.getElementById(componentProgressId).style.width = '100%'
       }, 100)
     } else {
-      style.zIndex = 0
-      style.opacity = (4 - (index * 1.2)) / 4
-      style.transition = `all 0ms linear`
-      style.transform = 'none'
+      style.display = 'none'
 
-      setTimeout(() => {
-        document.getElementById(containerId).style.transition = 'all 0ms linear'
-        document.getElementById(containerId).style.opacity = (4 - (index + 1 * 1.2)) / 4
-        document.getElementById(containerId).style.transform = 'none'
-      }, 1)
-
-      setTimeout(() => {
-        document.getElementById(containerId).style.transition = `all ${this.millisecondsPerMeasure() - 100}ms linear`
-        document.getElementById(containerId).style.opacity = (4 - (index * 1.2)) / 4
-        document.getElementById(containerId).style.transform = `translate(0px, -170px)`
-      }, 100)
+      // style.zIndex = 0
+      // style.opacity = (4 - (index * 1.2)) / 4
+      // style.transition = `all 0ms linear`
+      // style.transform = 'none'
+      //
+      // setTimeout(() => {
+      //   document.getElementById(containerId).style.transition = 'all 0ms linear'
+      //   document.getElementById(containerId).style.opacity = (4 - (index + 1 * 1.2)) / 4
+      //   document.getElementById(containerId).style.transform = 'none'
+      // }, 1)
+      //
+      // setTimeout(() => {
+      //   document.getElementById(containerId).style.transition = `all ${this.millisecondsPerMeasure() - 100}ms linear`
+      //   document.getElementById(containerId).style.opacity = (4 - (index * 1.2)) / 4
+      //   document.getElementById(containerId).style.transform = `translate(0px, -170px)`
+      // }, 100)
     }
 
     let patternData = manipulator.patternData
     return (
-      <div key={index} id={containerId} className={'measureContainer'} style={style}>
-        <div className={'measureCount'}>
-          {measureId + 1}
-        </div>
-        <div className={'editorContainer measureContent'} id={componentId}>
-          {[...Array(16)].map((key, x) => {
-            return (
-              <div key={x} className={'editorColumn'}>
-                {[...Array(16)].map((key, y) => {
-                  return (
-                    <div key={y} className={'editorNoteButton'} >
-                      {this.renderEditorNoteButtonImage({patternData, x, y})}
-                    </div>
-                  )
-                })}
-              </div>
-            )
-          })}
-          <div className={'measureContentProgress'} id={componentProgressId} />
-        </div>
+      <div key={index} id={componentId} className={'editorContainer'} style={style}>
+        {[...Array(16)].map((key, x) => {
+          return (
+            <div key={x} className={'editorColumn'}>
+              {[...Array(16)].map((key, y) => {
+                return (
+                  <div key={y} className={'editorNoteButton'} >
+                    {this.renderEditorNoteButtonImage({patternData, x, y, index})}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
+        <div className={'measureContentProgress'} id={componentProgressId} />
       </div>
     )
   }
 
   render () {
     return (
-      <div className='playerContainer'>
-        <h1>Player {this.props.match.params._id}</h1>
-        <div>
-          {[0, 1, 2, 3].map((i, index) => {
-            let measure = this.state.currentMeasureId + i
-            if (measure >= 4) {
-              measure = measure - 4
-            }
-            return this.renderMeasure(measure, index)
-          })}
+      <div className='manipulatorContainer'>
+        <div className={'header'}>
+          <div>
+            Player {this.state.playerId} . Measure {this.state.currentMeasureId}
+          </div>
+          <div>
+            <a href={'#'} onClick={this.onClickPlayAudio}>Audio {this.state.playAudio ? 'On' : 'Off'}</a>
+          </div>
         </div>
+        {[0, 1, 2, 3].map((i, index) => {
+          let measure = this.state.currentMeasureId + i
+          if (measure >= 4) {
+            measure = measure - 4
+          }
+          return this.renderMeasure(measure, index)
+        })}
       </div>
     )
   }

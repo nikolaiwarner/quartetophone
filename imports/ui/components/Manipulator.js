@@ -7,11 +7,10 @@ export default class Manipulator extends Component {
   constructor (props, context) {
     super(props)
     this.state = {
+      totalTimeLeft: 60,
+      loadingText: 'Connecting to a player and measure...',
       patternData: {},
-      key: props.key || 'C',
-      clef: props.clef || 'treble', // treble, alto, tenor, bass, percussion
       bpm: props.bpm || 85,
-      beatsPerMeasure: 4,
       currentMeasureId: 1
     }
   }
@@ -19,11 +18,27 @@ export default class Manipulator extends Component {
   componentDidMount () {
     if (this.props.newManipulator) {
       Meteor.call('manipulators.insert', (error, result) => {
-        if (error) { console.warn('error', result) }
-        window.location = '/manipulators/' + result
+        if (error) {
+          console.warn('error', result)
+          window.location = '/'
+          return
+        }
+        if (result === false) {
+          this.setState({
+            loadingText: 'All measures are currently filled. Please wait a few moments and try again.'
+          })
+        } else {
+          window.location = '/manipulators/' + result
+        }
       })
     }
     window.onbeforeunload = this.expireManipulator.bind(this)
+    this.setState({timeLeft: this.state.totalTimeLeft}, () => {
+      setInterval(() => {
+        this.setState({timeLeft: this.state.timeLeft - 1})
+        console.log(this.state.timeLeft)
+      }, 1000)
+    })
   }
 
   componentWillUnmount () {
@@ -56,7 +71,7 @@ export default class Manipulator extends Component {
   }
 
   onClickEditorNoteButton ({x, y}) {
-    let durations = [0, 1, 2, 4, 8, 16]
+    let durations = [0, 1, 2, 4, 8, 16].reverse()
     let durationIndex = durations.indexOf(this.durationOfNote({x, y}))
     durationIndex = durationIndex + 1
     if (durationIndex > durations.length - 1) {
@@ -69,7 +84,7 @@ export default class Manipulator extends Component {
     }
     patternData[x][y] = z
 
-    this.setState({patternData}, () => {
+    this.setState({patternData, timeLeft: this.state.totalTimeLeft}, () => {
       Meteor.call('manipulators.updatePattern', this.props.manipulator._id, this.state.patternData, (error, result) => {
         if (error) { console.warn('error', result) }
         console.log('result', result)
@@ -106,13 +121,32 @@ export default class Manipulator extends Component {
 
   render () {
     if (this.props.loading || !this.props.manipulator._id) {
-      return <div className='center'>...</div>
+      setTimeout(() => {
+        if (this.props.loading || !this.props.manipulator._id) {
+          window.location = '/'
+        }
+      }, 4000)
+      return <div className='center'>{this.state.loadingText}</div>
     }
     return (
       <div className='manipulatorContainer'>
+        <div className={'header'}>
+          <div>
+            <a href={'/'}>Exit</a>
+          </div>
+          <div>
+            {(this.state.timeLeft < 10) &&
+              <span>
+                Timeout in {this.state.timeLeft} seconds
+              </span>
+            }
+          </div>
+          <div>
+            Player {this.props.manipulator.playerId} .
+            Measure {this.props.manipulator.measureId}
+          </div>
+        </div>
         {this.renderEditor()}
-        Player {this.props.manipulator.playerId} .
-        Measure {this.props.manipulator.measureId}
       </div>
     )
   }
