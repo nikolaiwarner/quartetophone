@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
 import { Meteor } from 'meteor/meteor'
 import Tone from 'tone'
@@ -13,7 +14,7 @@ export default class Player extends Component {
       beatsPerMeasure: 4,
       currentMeasureId: 1,
       playerId: props.match.params._id,
-      playAudio: false
+      playAudio: true
     }
 
     let bitcrusher = new Tone.BitCrusher(4).toMaster()
@@ -71,9 +72,6 @@ export default class Player extends Component {
 
   renderEditorNoteButtonImage ({patternData, x, y, index}) {
     let duration = this.durationOfNote({patternData, x, y})
-
-    //this.state.playAudio
-
     if (this.state.playAudio) {
       if (index === 0 && duration !== 0) {
         let note = [
@@ -158,12 +156,12 @@ export default class Player extends Component {
   render () {
     return (
       <div className='manipulatorContainer'>
-        <div className={'header'}>
+        <div className={`header header${this.state.playerId}`}>
           <div>
             Player {this.state.playerId} . Measure {this.state.currentMeasureId}
           </div>
           <div>
-            <a href={'#'} onClick={this.onClickPlayAudio}>Audio {this.state.playAudio ? 'On' : 'Off'}</a>
+            <a href={'#'} onClick={this.onClickPlayAudio}>{this.state.playAudio ? 'Turn audio off' : 'Turn audio on'}</a>
           </div>
         </div>
         {[0, 1, 2, 3].map((i, index) => {

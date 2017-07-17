@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
 import { Meteor } from 'meteor/meteor'
 import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom'
@@ -8,11 +9,12 @@ export default class Manipulator extends Component {
     super(props)
     this.state = {
       totalTimeLeft: 60,
-      loadingText: 'Connecting to a player and measure...',
+      loadingText: 'Connecting to a random player and measure...',
       patternData: {},
       bpm: props.bpm || 85,
       currentMeasureId: 1
     }
+    this.onClickClear = this.onClickClear.bind(this)
   }
 
   componentDidMount () {
@@ -58,7 +60,6 @@ export default class Manipulator extends Component {
   expireManipulator () {
     Meteor.call('manipulators.expire', this.props.manipulator._id, (error, result) => {
       if (error) { console.warn('error', result) }
-      console.log('result', result)
     })
   }
 
@@ -68,6 +69,14 @@ export default class Manipulator extends Component {
       duration = this.state.patternData[x][y]
     }
     return duration
+  }
+
+  onClickClear () {
+    this.setState({patternData: {}, timeLeft: this.state.totalTimeLeft}, () => {
+      Meteor.call('manipulators.updatePattern', this.props.manipulator._id, this.state.patternData, (error, result) => {
+        if (error) { console.warn('error', result) }
+      })
+    })
   }
 
   onClickEditorNoteButton ({x, y}) {
@@ -87,7 +96,6 @@ export default class Manipulator extends Component {
     this.setState({patternData, timeLeft: this.state.totalTimeLeft}, () => {
       Meteor.call('manipulators.updatePattern', this.props.manipulator._id, this.state.patternData, (error, result) => {
         if (error) { console.warn('error', result) }
-        console.log('result', result)
       })
     })
   }
@@ -130,9 +138,10 @@ export default class Manipulator extends Component {
     }
     return (
       <div className='manipulatorContainer'>
-        <div className={'header'}>
-          <div>
-            <a href={'/'}>Exit</a>
+        <div className={`header header${this.props.manipulator.playerId}`}>
+          <div className={'nav'}>
+            <a href={'/'}>Quit</a>
+            <a href={'#'} onClick={this.onClickClear}>Clear</a>
           </div>
           <div>
             {(this.state.timeLeft < 10) &&
@@ -157,5 +166,5 @@ Manipulator.propTypes = {
 }
 
 Manipulator.contextTypes = {
-  router: React.PropTypes.object
+  router: PropTypes.object
 }

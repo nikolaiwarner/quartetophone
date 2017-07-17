@@ -206,3 +206,31 @@ a {
   justify-content: space-between;
   z-index: 1;
 }
+
+.header1 {
+  background-color: #000000;
+  color: #fff;
+}
+
+.header2 {
+  background-color: #ff00ff;
+  color: #fff;
+}
+
+.header3 {
+  background-color: #00ffff;
+  color: #000;
+}
+
+.header4 {
+  background-color: #ffff00;
+  color: #000;
+}
+
+.header3 a, .header4 a {
+  color: #000;
+}
+
+.header .nav a {
+  margin-right: 20px;
+}
