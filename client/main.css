@@ -128,10 +128,21 @@ a {
 }
 
 .measureContentProgress {
+  pointer-events: none;
   position: absolute;
   left: 0;
   height: 100%;
-  border-right: solid 2px red;
+  border-right: solid 5px red;
+}
+
+.measureContentProgress:after {
+  content: " ";
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: 0px;
+  bottom: -20px;
+  border: solid 20px rgba(255,0,0, 0.2);
 }
 
 .measureContainer {

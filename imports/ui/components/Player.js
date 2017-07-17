@@ -8,10 +8,7 @@ export default class Player extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      key: props.key || 'C',
-      clef: props.clef || 'treble', // treble, alto, tenor, bass, percussion
       bpm: props.bpm || 85,
-      beatsPerMeasure: 4,
       currentMeasureId: 1,
       playerId: props.match.params._id,
       playAudio: true
@@ -50,12 +47,8 @@ export default class Player extends Component {
     })
   }
 
-  bpmToMilliseconds (bpm) {
-    return (60 * 1000) / bpm
-  }
-
   millisecondsPerMeasure () {
-    return this.bpmToMilliseconds(this.state.bpm) * this.state.beatsPerMeasure
+    return ((60 * 1000) / this.state.bpm) * 4
   }
 
   durationOfNote ({patternData, x, y}) {
@@ -92,17 +85,11 @@ export default class Player extends Component {
     let manipulator = this.props.manipulators.find((manipulator) => {
       return manipulator.measureId === measureId
     }) || {}
-    //
-    let containerId = `measureContainer${index}`
     let componentId = `measure${index}${manipulator._id}`
     let componentProgressId = `measure${index}${manipulator._id}_progress`
-
     let style = {}
     if (index === 0) {
       style.display = 'flex'
-      // style.zIndex = 1
-      // style.opacity = 1
-
       setTimeout(() => {
         document.getElementById(componentProgressId).style.transition = 'all 0ms linear'
         document.getElementById(componentProgressId).style.width = '0%'
@@ -113,23 +100,6 @@ export default class Player extends Component {
       }, 100)
     } else {
       style.display = 'none'
-
-      // style.zIndex = 0
-      // style.opacity = (4 - (index * 1.2)) / 4
-      // style.transition = `all 0ms linear`
-      // style.transform = 'none'
-      //
-      // setTimeout(() => {
-      //   document.getElementById(containerId).style.transition = 'all 0ms linear'
-      //   document.getElementById(containerId).style.opacity = (4 - (index + 1 * 1.2)) / 4
-      //   document.getElementById(containerId).style.transform = 'none'
-      // }, 1)
-      //
-      // setTimeout(() => {
-      //   document.getElementById(containerId).style.transition = `all ${this.millisecondsPerMeasure() - 100}ms linear`
-      //   document.getElementById(containerId).style.opacity = (4 - (index * 1.2)) / 4
-      //   document.getElementById(containerId).style.transform = `translate(0px, -170px)`
-      // }, 100)
     }
 
     let patternData = manipulator.patternData

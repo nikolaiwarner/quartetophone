@@ -41,6 +41,44 @@ export default class Manipulator extends Component {
         console.log(this.state.timeLeft)
       }, 1000)
     })
+
+    // To syncronize clients, calculate measures elapsed since the beginning of time
+    let measuresElapsed = Date.now() / this.millisecondsPerMeasure()
+    let currentMeasure = (measuresElapsed % 4)
+    let percentUntilNextMeasure = (currentMeasure + '').split('.')
+    let startDelay = 0
+    if (percentUntilNextMeasure[1]) {
+      percentUntilNextMeasure = 1 - parseFloat('0.' + percentUntilNextMeasure[1])
+      startDelay = percentUntilNextMeasure * this.millisecondsPerMeasure()
+    }
+    this.setState({currentMeasureId: Math.floor(currentMeasure) + 1}, () => {
+      // Delay start until next whole measure
+      setTimeout(() => {
+        setInterval(() => {
+          let currentMeasureId = this.state.currentMeasureId + 1
+          if (currentMeasureId === 5) {
+            currentMeasureId = 1
+          }
+          if (currentMeasureId === 1) {
+            setTimeout(() => {
+              document.getElementById('progress').style.transition = 'all 0ms linear'
+              document.getElementById('progress').style.width = '0%'
+              document.getElementById('progress').style.opacity = '0'
+            }, 1)
+            setTimeout(() => {
+              document.getElementById('progress').style.transition = `all ${this.millisecondsPerMeasure() - 100}ms linear`
+              document.getElementById('progress').style.width = '100%'
+              document.getElementById('progress').style.opacity = '1'
+            }, 100)
+            setTimeout(() => {
+              document.getElementById('progress').style.transition = `all 500ms linear`
+              document.getElementById('progress').style.opacity = '0'
+            }, this.millisecondsPerMeasure())
+          }
+          this.setState({currentMeasureId})
+        }, this.millisecondsPerMeasure())
+      }, startDelay)
+    })
   }
 
   componentWillUnmount () {
@@ -55,6 +93,10 @@ export default class Manipulator extends Component {
         }
       }
     }
+  }
+
+  millisecondsPerMeasure () {
+    return ((60 * 1000) / this.state.bpm) * 4
   }
 
   expireManipulator () {
@@ -123,6 +165,7 @@ export default class Manipulator extends Component {
             </div>
           )
         })}
+        <div className={'measureContentProgress'} id={'progress'} />
       </div>
     )
   }
