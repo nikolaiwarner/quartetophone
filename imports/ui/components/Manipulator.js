@@ -177,7 +177,7 @@ export default class Manipulator extends Component {
           window.location = '/'
         }
       }, 4000)
-      return <div className='center'>{this.state.loadingText}</div>
+      return <div className='center loadingText'>{this.state.loadingText}</div>
     }
     return (
       <div className='manipulatorContainer'>

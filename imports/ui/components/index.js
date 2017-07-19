@@ -2,7 +2,7 @@ import React from 'react'
 
 export const Index = () => (
   <div className={'indexContainer'}>
-    <h1>quartetophone</h1>
+    <h1><a href='/'>quartetophone</a></h1>
     <h4>an interactive live performance work by <a href="https://twitter.com/nickwarner">@nickwarner</a></h4>
 
     <h3><a className={'playButton'} href='/manipulators/new'>play along</a></h3>
@@ -13,17 +13,17 @@ export const Index = () => (
 
 export const About = () => (
   <div className={'indexContainer'}>
-    <h1>quartet-o-phone</h1>
+    <h1><a href='/'>quartetophone</a></h1>
     <h3>about the work</h3>
-    <div>
-      asdfghjk
-    </div>
+    <p>
+      Artist Nick Warner presents "quartetophone", a live performance of his "four.parts" real-time collaborative music making experience. <a href="https://www.facebook.com/volarequartet">Lexington's Volare String Quartet</a> will play a constantly changing composition based on the input of audience members from their mobile devices. Audience members will be instructed to open this website on their phone. This will give them command of one measure of the score allowing them to choose the notes they'd like for the performer to play. Meanwhile, the input from the mobile devices is translated live into sheet music on tablet computers for the performers to play. "quartetophone" moves the composition of live music to the audience itself to create immediate feedback and iterative, collaborative music and empowers the audience to make an intimate connection with the performers.
+    </p>
   </div>
 )
 
 export const Admin = () => (
   <div className={'indexContainer'}>
-    <h1>four.parts</h1>
+    <h1><a href='/'>quartetophone</a></h1>
     <h3>secret admin dashboard</h3>
     <h2>
       <a href='/manipulators'>current manipulators</a><br />
