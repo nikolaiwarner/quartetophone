@@ -2,9 +2,22 @@ import React from 'react'
 
 export const Index = () => (
   <div className={'indexContainer'}>
-    <h1>four.parts</h1>
+    <h1>quartetophone</h1>
+    <h4>an interactive live performance work by <a href="https://twitter.com/nickwarner">@nickwarner</a></h4>
+
     <h3><a className={'playButton'} href='/manipulators/new'>play along</a></h3>
-    <h4>an interactive live performance work by <a href="http://nwarner.com">nick warner</a></h4>
+
+    <h4><a href='/about'>About the work ♪♪</a></h4>
+  </div>
+)
+
+export const About = () => (
+  <div className={'indexContainer'}>
+    <h1>quartet-o-phone</h1>
+    <h3>about the work</h3>
+    <div>
+      asdfghjk
+    </div>
   </div>
 )
 

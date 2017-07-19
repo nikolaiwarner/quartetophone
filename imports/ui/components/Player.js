@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
 import { Meteor } from 'meteor/meteor'
 import Tone from 'tone'
+import Fullscreen from 'react-html5-fullscreen'
 
 export default class Player extends Component {
   constructor (props) {
@@ -131,6 +132,11 @@ export default class Player extends Component {
             Player {this.state.playerId} . Measure {this.state.currentMeasureId}
           </div>
           <div>
+            <Fullscreen
+              contentEnter={<a href={'#'}>Enter fullscreen</a>}
+              contentExit={<a href={'#'}>Exit fullscreen</a>}
+              target='body'
+            />
             <a href={'#'} onClick={this.onClickPlayAudio}>{this.state.playAudio ? 'Turn audio off' : 'Turn audio on'}</a>
           </div>
         </div>

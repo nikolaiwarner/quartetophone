@@ -13,6 +13,7 @@
     "react": "^15.5.4",
     "react-addons-pure-render-mixin": "^15.5.2",
     "react-dom": "^15.5.4",
+    "react-html5-fullscreen": "0.0.2",
     "react-router-dom": "^4.1.1",
     "tone": "^0.10.0"
   }
