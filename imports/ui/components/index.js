@@ -26,11 +26,12 @@ export const Admin = () => (
     <h1><a href='/'>quartetophone</a></h1>
     <h3>secret admin dashboard</h3>
     <h2>
-      <a href='/manipulators'>current manipulators</a><br />
+      <a href='/everyone'>All players at once</a><br />
       <a href='/players/1'>Player 1</a><br />
       <a href='/players/2'>Player 2</a><br />
       <a href='/players/3'>Player 3</a><br />
       <a href='/players/4'>Player 4</a><br />
+      <a href='/manipulators'>current manipulators</a><br />
     </h2>
   </div>
 )
